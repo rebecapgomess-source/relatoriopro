@@ -1,0 +1,1 @@
+// Funções integradas diretamente no index.html

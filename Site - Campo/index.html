@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Ministério</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-light: #eff6ff;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
+            
+            --color-pregacao: #10b981;
+            --color-publico: #3b82f6;
+            --color-predial: #f59e0b;
+            --color-cartas: #8b5cf6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'DM Sans', sans-serif; }
+        body { background-color: var(--background); color: var(--text-main); }
+        .app { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: 260px;
+            background-color: #ffffff;
+            border-right: 1px solid var(--border-color);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo { display: flex; align-items: center; gap: 12px; padding: 0 12px; margin-bottom: 32px; }
+        .logo-icon { font-size: 24px; background: var(--primary-light); padding: 8px; border-radius: 10px; }
+        .logo-text strong { display: block; font-family: 'Playfair Display', serif; font-size: 18px; color: var(--text-main); }
+        .logo-text span { font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; }
+
+        .nav { display: flex; flex-direction: column; gap: 4px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+            border: none; background: transparent; color: var(--text-muted);
+            font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer;
+            text-align: left; transition: all 0.2s ease;
+        }
+        .nav-item:hover { background-color: #f1f5f9; color: var(--text-main); }
+        .nav-item.active { background-color: var(--primary-light); color: var(--primary); font-weight: 600; }
+
+        .main-content { flex: 1; padding: 40px; max-width: 1140px; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .page-header h1 { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: var(--text-main); }
+        .page-header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 32px; }
+        .dashboard-card { background: var(--card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .card-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .dashboard-card strong { display: block; font-size: 32px; margin-top: 8px; color: var(--text-main); font-weight: 700; }
+
+        .progress-container { width: 100%; height: 6px; background: #f1f5f9; border-radius: 999px; margin-top: 16px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--primary); border-radius: 999px; width: 0%; transition: width 0.4s ease; }
+
+        .content-grid { display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 24px; }
+        .content-card { background: var(--card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .calendar-header h2 { font-size: 18px; font-weight: 600; }
+        .calendar-arrow { background: transparent; border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+        .calendar-arrow:hover { background-color: #f1f5f9; }
+
+        .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
+        .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+
+        .calendar-day {
+            min-height: 56px; border: 1px solid var(--border-color); border-radius: 10px; padding: 6px;
+            display: flex; flex-direction: column; align-items: center; background: #ffffff;
+        }
+        .calendar-day.empty { border: none; background: transparent; }
+        .calendar-day.worked-day { background-color: var(--primary-light); border-color: #bfdbfe; }
+        .day-number { font-size: 12px; font-weight: 600; }
+
+        .dots-container { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; justify-content: center; }
+        .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+        .dot-pregacao { background-color: var(--color-pregacao); }
+        .dot-publico  { background-color: var(--color-publico); }
+        .dot-predial  { background-color: var(--color-predial); }
+        .dot-cartas   { background-color: var(--color-cartas); }
+
+        .legenda { display: flex; gap: 16px; margin-top: 20px; font-size: 12px; color: var(--text-muted); flex-wrap: wrap; }
+        .legenda span { display: flex; align-items: center; gap: 6px; }
+        .legenda i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+        .add-button { background: var(--primary); color: #ffffff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: background 0.2s; }
+        .add-button:hover { background: var(--primary-hover); }
+        .delete-button { background: #ef4444; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; }
+
+        .item-card { background: #ffffff; border: 1px solid var(--border-color); padding: 16px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+        .planning-summary { display: flex; gap: 16px; margin-bottom: 24px; }
+        .summary-box { flex: 1; background: #f8fafc; border: 1px solid var(--border-color); padding: 16px 20px; border-radius: 12px; }
+        .summary-box span { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+        .summary-box strong { display: block; font-size: 22px; color: var(--primary); margin-top: 4px; }
+
+        .reprogram-box { background: var(--primary-light); border: 1px solid #bfdbfe; padding: 20px; border-radius: 12px; margin-bottom: 24px; }
+        .reprogram-header { display: flex; gap: 12px; align-items: center; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #ffffff; padding: 32px; border-radius: 20px; width: 90%; max-width: 460px; box-shadow: var(--shadow-md); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .close-modal { background: none; border: none; font-size: 22px; color: var(--text-muted); cursor: pointer; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; }
+
+        @media (max-width: 768px) {
+            .app { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); }
+            .content-grid { grid-template-columns: 1fr; }
+            .planning-summary { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">📖</div>
+                <div class="logo-text">
+                    <strong>Meu Ministério</strong>
+                    <span>RELATÓRIO & PLANEJAMENTO</span>
+                </div>
+            </div>
+
+            <nav class="nav">
+                <button class="nav-item active" onclick="mudarAba('dashboard', this)"><span>📊</span> Painel</button>
+                <button class="nav-item" onclick="mudarAba('relatorio', this)"><span>📋</span> Relatório</button>
+                <button class="nav-item" onclick="mudarAba('estudos', this)"><span>📚</span> Estudos</button>
+                <button class="nav-item" onclick="mudarAba('revisitas', this)"><span>🔄</span> Revisitas</button>
+                <button class="nav-item" onclick="mudarAba('diario', this)"><span>✍️</span> Diário</button>
+                <button class="nav-item" onclick="mudarAba('planejador', this)"><span>📅</span> Planejador</button>
+                <button class="nav-item" onclick="mudarAba('progresso', this)"><span>🎯</span> Progresso de Metas</button>
+                <button class="nav-item" onclick="mudarAba('configuracoes', this)"><span>⚙️</span> Configurações</button>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+
+            <!-- PAINEL -->
+            <section id="dashboard" class="page active">
+                <header class="page-header">
+                    <div>
+                        <h1>Painel do Mês</h1>
+                        <p>Visão geral do seu serviço de campo.</p>
+                    </div>
+                </header>
+
+                <div class="cards-grid">
+                    <div class="dashboard-card">
+                        <span class="card-label">Horas Realizadas</span>
+                        <strong id="cardHoras">0:00</strong>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="barraProgresso"></div>
+                        </div>
+                    </div>
+                    <div class="dashboard-card">
+                        <span class="card-label">Estudos Bíblicos</span>
+                        <strong id="cardEstudos">0</strong>
+                    </div>
+                    <div class="dashboard-card">
+                        <span class="card-label">Revisitas Feitas</span>
+                        <strong id="cardRevisitas">0</strong>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="content-card">
+                        <div class="calendar-header">
+                            <button class="calendar-arrow" onclick="mudarMes(-1)">‹</button>
+                            <h2 id="mesAtual">Mês Ano</h2>
+                            <button class="calendar-arrow" onclick="mudarMes(1)">›</button>
+                        </div>
+
+                        <div class="calendar" style="margin-top: 15px;">
+                            <div class="calendar-weekdays">
+                                <div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div>
+                            </div>
+                            <div class="calendar-days" id="diasCalendario"></div>
+                        </div>
+
+                        <div class="legenda">
+                            <span><i class="dot-pregacao"></i> Pregação</span>
+                            <span><i class="dot-publico"></i> Test. Público</span>
+                            <span><i class="dot-predial"></i> Predial/Cond.</span>
+                            <span><i class="dot-cartas"></i> Cartas/Tel.</span>
+                        </div>
+                    </div>
+
+                    <div class="content-card">
+                        <div style="margin-bottom: 16px;">
+                            <h2 style="font-size: 18px; font-weight: 600;">Registros Recentes</h2>
+                        </div>
+                        <div id="listaAtividadesRecentes"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RELATÓRIO -->
+            <section id="relatorio" class="page">
+                <header class="page-header">
+                    <div>
+                        <h1>Relatório de Campo</h1>
+                        <p>Registro das suas horas e modalidades.</p>
+                    </div>
+                    <button class="add-button" onclick="abrirModalNovaAtividade()">+ Registrar</button>
+                </header>
+
+                <div id="listaAtividades"></div>
+            </section>
+
+            <!-- ESTUDOS -->
+            <section id="estudos" class="page">
+                <header class="page-header">
+                    <div>
+                        <h1>Estudos Bíblicos</h1>
+                        <p>Acompanhamento dos seus estudantes.</p>
+                    </div>
+                    <button class="add-button" onclick="abrirModal('modalEstudo')">+ Registrar</button>
+                </header>
+
+                <div id="listaEstudos"></div>
+            </section>
+
+            <!-- REVISITAS -->
+            <section id="revisitas" class="page">
+                <header class="page-header">
+                    <div>
+                        <h1>Revisitas</h1>
+                        <p>Registro de pessoas interessadas.</p>
+                    </div>
+                    <button class="add-button" onclick="abrirModal('modalRevisita')">+ Registrar</button>
+                </header>
+
+                <div id="listaRevisitas"></div>
+            </section>
+
+            <!-- DIÁRIO -->
+            <section id="diario" class="page">
+                <header class="page-header">
+                    <div>
+                        <h1>Diário do Ministério</h1>
+                        <p>Anotações e experiências marcantes.</p>
+                    </div>
+                    <button class="add-button" onclick="abrirModal('modalDiario')">+ Registrar</button>
+                </header>
+
+                <div id="listaDiario"></div>
+            </section>
+
+            <!-- PLANEJADOR -->
+            <section id="planejador" class="page">
+                <header class="page-header">
+                    <div>
+                        <h1>Planejamento Semanal</h1>
+                        <p>Monte sua programação e veja a meta diária ajustada para fechar o mês.</p>
+                    </div>
+                </header>
+
+                <div class="content-card">
+                    <div class="reprogram-box">
+                        <div class="reprogram-header">
+                            <span style="font-size:20px;">💡</span>
+                            <div>
+                                <strong>Ajuste Automático de Programação</strong>
+                                <p id="textoStatusAtraso">Calculando seu ritmo para este mês...</p>
+                            </div>
+                        </div>
+                        <div id="metricasReprogramacao"></div>
+                    </div>
+
+                    <div class="planning-summary">
+                        <div class="summary-box">
+                            <span>Total Planejado (Semana Base)</span>
+                            <strong id="totalSemanaPlanejado">0:00 h</strong>
+                        </div>
+                        <div class="summary-box">
+                            <span>Estimativa Mensal (Semana Base × 4)</span>
+                            <strong id="estimativaMensalPlanejada">0:00 h</strong>
+                        </div>
+                    </div>
+
+                    <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Sua Programação Padrão por Dia</h2>
+                    <div id="containerPlanejamentoSemanal"></div>
+                </div>
+            </section>
+
+            <!-- PROGRESSO DE METAS -->
+            <section id="progresso" class="page">
+                <header class="page-header">
+                    <div>
+                        <h1>Progresso de Metas</h1>
+                        <p>Acompanhe o que resta para suas metas mensal e anual.</p>
+                    </div>
+                </header>
+
+                <div class="cards-grid">
+                    <div class="dashboard-card">
+                        <span class="card-label">Falta para o Mês (Meta: <span id="metaMesTexto">50</span>h)</span>
+                        <strong id="horasFaltantesMes">0:00 h</strong>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="barraProgressoMes"></div>
+                        </div>
+                    </div>
+                    <div class="dashboard-card">
+                        <span class="card-label">Falta para o Ano de Serviço (Meta: <span id="metaAnoTexto">600</span>h)</span>
+                        <strong id="horasFaltantesAno">0:00 h</strong>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="barraProgressoAno"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CONFIGURAÇÕES -->
+            <section id="configuracoes" class="page">
+                <header class="page-header">
+                    <div>
+                        <h1>Configurações</h1>
+                        <p>Defina suas metas.</p>
+                    </div>
+                </header>
+
+                <div class="content-card" style="margin-bottom: 24px;">
+                    <h2 style="font-size: 18px; margin-bottom: 16px;">Metas de Horas</h2>
+                    <div class="form-group">
+                        <label for="metaHorasInput">Meta Mensal (horas):</label>
+                        <input type="number" id="metaHorasInput" min="1" max="300" placeholder="Ex: 50">
+                    </div>
+                    <div class="form-group">
+                        <label for="metaAnoInput">Meta Anual (horas):</label>
+                        <input type="number" id="metaAnoInput" min="1" max="2000" placeholder="Ex: 600">
+                    </div>
+                    <button class="add-button" onclick="salvarMeta()">Salvar Metas</button>
+                </div>
+
+                <div class="content-card">
+                    <h2 style="font-size: 18px; margin-bottom: 8px;">Limpar Dados</h2>
+                    <p style="color: var(--text-muted); font-size: 14px;">Apaga todos os registros salvos neste navegador.</p>
+                    <button class="delete-button" onclick="resetarDados()" style="margin-top: 16px; padding: 10px 16px;">Limpar Tudo</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAIS -->
+    <div class="modal" id="modalAtividade">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="tituloModalAtividade" style="font-size: 20px;">Registrar Atividade</h2>
+                <button class="close-modal" onclick="fecharModal('modalAtividade')">&times;</button>
+            </div>
+            <form id="formAtividade" onsubmit="salvarAtividade(event)">
+                <input type="hidden" id="idAtividadeEditando" value="">
+                <div class="form-group">
+                    <label for="dataAtividade">Data</label>
+                    <input type="date" id="dataAtividade" required>
+                </div>
+                <div class="form-group">
+                    <label for="modalidadeAtividade">Modalidade</label>
+                    <select id="modalidadeAtividade" required>
+                        <option value="pregacao">Pregação de Casa em Casa</option>
+                        <option value="publico">Testemunho Público</option>
+                        <option value="predial">Predial / Condomínio</option>
+                        <option value="cartas">Testemunho por Cartas / Telefone</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="horasAtividade">Tempo (Horas e Minutos)</label>
+                    <input type="text" id="horasAtividade" placeholder="Ex: 00:54, 54 min ou 1h30" required>
+                </div>
+                <div class="form-group">
+                    <label for="obsAtividade">Observações</label>
+                    <textarea id="obsAtividade" rows="3" placeholder="Detalhes..."></textarea>
+                </div>
+                <button type="submit" class="add-button" style="width: 100%;">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="modalEstudo">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="font-size: 20px;">Registrar Estudo</h2>
+                <button class="close-modal" onclick="fecharModal('modalEstudo')">&times;</button>
+            </div>
+            <form id="formEstudo" onsubmit="salvarEstudo(event)">
+                <div class="form-group">
+                    <label for="nomeEstudante">Nome do Estudante</label>
+                    <input type="text" id="nomeEstudante" required>
+                </div>
+                <div class="form-group">
+                    <label for="publicacaoEstudo">Publicação em Uso</label>
+                    <input type="text" id="publicacaoEstudo">
+                </div>
+                <div class="form-group">
+                    <label for="diaHoraEstudo">Dia e Horário</label>
+                    <input type="text" id="diaHoraEstudo" placeholder="Ex: Terças às 19:00">
+                </div>
+                <button type="submit" class="add-button" style="width: 100%;">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="modalRevisita">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="font-size: 20px;">Registrar Revisita</h2>
+                <button class="close-modal" onclick="fecharModal('modalRevisita')">&times;</button>
+            </div>
+            <form id="formRevisita" onsubmit="salvarRevisita(event)">
+                <div class="form-group">
+                    <label for="nomeRevisita">Nome da Pessoa</label>
+                    <input type="text" id="nomeRevisita" required>
+                </div>
+                <div class="form-group">
+                    <label for="enderecoRevisita">Endereço / Local</label>
+                    <input type="text" id="enderecoRevisita">
+                </div>
+                <div class="form-group">
+                    <label for="assuntoRevisita">Assunto Tratado</label>
+                    <textarea id="assuntoRevisita" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="dataUltimaVisita">Data da Visita</label>
+                    <input type="date" id="dataUltimaVisita" required>
+                </div>
+                <button type="submit" class="add-button" style="width: 100%;">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="modalDiario">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="font-size: 20px;">Registrar no Diário</h2>
+                <button class="close-modal" onclick="fecharModal('modalDiario')">&times;</button>
+            </div>
+            <form id="formDiario" onsubmit="salvarDiario(event)">
+                <div class="form-group">
+                    <label for="tituloDiario">Título</label>
+                    <input type="text" id="tituloDiario" required>
+                </div>
+                <div class="form-group">
+                    <label for="dataDiario">Data</label>
+                    <input type="date" id="dataDiario" required>
+                </div>
+                <div class="form-group">
+                    <label for="textoDiario">Anotação</label>
+                    <textarea id="textoDiario" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="add-button" style="width: 100%;">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let atividades = JSON.parse(localStorage.getItem('atividades')) || [];
+        let estudos = JSON.parse(localStorage.getItem('estudos')) || [];
+        let revisitas = JSON.parse(localStorage.getItem('revisitas')) || [];
+        let diario = JSON.parse(localStorage.getItem('diario')) || [];
+        let metas = JSON.parse(localStorage.getItem('metas')) || { mes: 50, ano: 600 };
+        let planejamentoSemanal = JSON.parse(localStorage.getItem('planejamentoSemanal')) || {
+            0: { ativo: false, tempo: "00:00" },
+            1: { ativo: false, tempo: "00:00" },
+            2: { ativo: false, tempo: "00:00" },
+            3: { ativo: false, tempo: "00:00" },
+            4: { ativo: false, tempo: "00:00" },
+            5: { ativo: false, tempo: "00:00" },
+            6: { ativo: false, tempo: "00:00" }
+        };
+
+        let dataVisualizada = new Date();
+
+        window.onload = function() {
+            carregarMetasInputs();
+            atualizarTela();
+        };
+
+        function mudarAba(idAba, elemento) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            const destino = document.getElementById(idAba);
+            if (destino) destino.classList.add('active');
+            if (elemento) elemento.classList.add('active');
+        }
+
+        function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function abrirModalNovaAtividade() {
+            document.getElementById('formAtividade').reset();
+            document.getElementById('idAtividadeEditando').value = '';
+            document.getElementById('tituloModalAtividade').innerText = 'Registrar Atividade';
+            abrirModal('modalAtividade');
+        }
+
+        function converterTextoParaMinutos(texto) {
+            if (!texto) return 0;
+            texto = String(texto).trim().toLowerCase();
+            if (texto.includes(':')) {
+                const p = texto.split(':');
+                return ((parseInt(p[0], 10) || 0) * 60) + (parseInt(p[1], 10) || 0);
+            }
+            if (texto.includes('h')) {
+                const p = texto.split('h');
+                return ((parseInt(p[0], 10) || 0) * 60) + (parseInt(p[1].replace(/[^0-9]/g, ''), 10) || 0);
+            }
+            const num = parseInt(texto.replace(/[^0-9]/g, ''), 10);
+            return isNaN(num) ? 0 : num;
+        }
+
+        function formatarMinutosParaHoras(minutos) {
+            const min = Math.max(0, parseInt(minutos, 10) || 0);
+            const h = Math.floor(min / 60);
+            const m = min % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
+        function salvarAtividade(e) {
+            e.preventDefault();
+            const idEditando = document.getElementById('idAtividadeEditando').value;
+            const data = document.getElementById('dataAtividade').value;
+            const modalidade = document.getElementById('modalidadeAtividade').value;
+            const tempoTexto = document.getElementById('horasAtividade').value;
+            const observacoes = document.getElementById('obsAtividade').value;
+            const minutos = converterTextoParaMinutos(tempoTexto);
+
+            if (idEditando) {
+                atividades = atividades.map(a => a.id == idEditando ? { ...a, data, modalidade, minutos, tempoFormatado: formatarMinutosParaHoras(minutos), observacoes } : a);
+            } else {
+                atividades.push({ id: Date.now(), data, modalidade, minutos, tempoFormatado: formatarMinutosParaHoras(minutos), observacoes });
+            }
+
+            salvarDados();
+            atualizarTela();
+            fecharModal('modalAtividade');
+        }
+
+        function editarAtividade(id) {
+            const item = atividades.find(a => a.id === id);
+            if (!item) return;
+            document.getElementById('idAtividadeEditando').value = item.id;
+            document.getElementById('dataAtividade').value = item.data;
+            document.getElementById('modalidadeAtividade').value = item.modalidade;
+            document.getElementById('horasAtividade').value = item.tempoFormatado;
+            document.getElementById('obsAtividade').value = item.observacoes || '';
+            document.getElementById('tituloModalAtividade').innerText = 'Editar Atividade';
+            abrirModal('modalAtividade');
+        }
+
+        function salvarEstudo(e) {
+            e.preventDefault();
+            estudos.push({ id: Date.now(), nome: document.getElementById('nomeEstudante').value, publicacao: document.getElementById('publicacaoEstudo').value, diaHora: document.getElementById('diaHoraEstudo').value });
+            salvarDados(); atualizarTela(); fecharModal('modalEstudo');
+        }
+
+        function salvarRevisita(e) {
+            e.preventDefault();
+            revisitas.push({ id: Date.now(), nome: document.getElementById('nomeRevisita').value, endereco: document.getElementById('enderecoRevisita').value, assunto: document.getElementById('assuntoRevisita').value, data: document.getElementById('dataUltimaVisita').value });
+            salvarDados(); atualizarTela(); fecharModal('modalRevisita');
+        }
+
+        function salvarDiario(e) {
+            e.preventDefault();
+            diario.push({ id: Date.now(), titulo: document.getElementById('tituloDiario').value, data: document.getElementById('dataDiario').value, texto: document.getElementById('textoDiario').value });
+            salvarDados(); atualizarTela(); fecharModal('modalDiario');
+        }
+
+        function salvarMeta() {
+            const m = parseInt(document.getElementById('metaHorasInput').value, 10);
+            const a = parseInt(document.getElementById('metaAnoInput').value, 10);
+            if (m > 0) metas.mes = m;
+            if (a > 0) metas.ano = a;
+            localStorage.setItem('metas', JSON.stringify(metas));
+            atualizarTela();
+            alert('Metas salvas!');
+        }
+
+        function carregarMetasInputs() {
+            document.getElementById('metaHorasInput').value = metas.mes;
+            document.getElementById('metaAnoInput').value = metas.ano;
+        }
+
+        function resetarDados() {
+            if (confirm('Deseja apagar todos os dados salvos?')) {
+                localStorage.clear();
+                atividades = []; estudos = []; revisitas = []; diario = [];
+                metas = { mes: 50, ano: 600 };
+                carregarMetasInputs();
+                atualizarTela();
+            }
+        }
+
+        function salvarDados() {
+            localStorage.setItem('atividades', JSON.stringify(atividades));
+            localStorage.setItem('estudos', JSON.stringify(estudos));
+            localStorage.setItem('revisitas', JSON.stringify(revisitas));
+            localStorage.setItem('diario', JSON.stringify(diario));
+            localStorage.setItem('planejamentoSemanal', JSON.stringify(planejamentoSemanal));
+        }
+
+        function atualizarTela() {
+            renderizarPainelEMetas();
+            renderizarListas();
+            renderizarCalendario();
+            renderizarPlanejador();
+        }
+
+        function renderizarPainelEMetas() {
+            const ano = dataVisualizada.getFullYear();
+            const mes = dataVisualizada.getMonth();
+
+            const minMes = atividades.reduce((acc, c) => {
+                if (!c.data) return acc;
+                const p = c.data.split('-');
+                if (parseInt(p[0], 10) === ano && (parseInt(p[1], 10) - 1) === mes) return acc + (c.minutos || 0);
+                return acc;
+            }, 0);
+
+            const minAno = atividades.reduce((acc, c) => acc + (c.minutos || 0), 0);
+
+            document.getElementById('cardHoras').innerText = formatarMinutosParaHoras(minMes);
+            document.getElementById('cardEstudos').innerText = estudos.length;
+            document.getElementById('cardRevisitas').innerText = revisitas.length;
+
+            document.getElementById('metaMesTexto').innerText = metas.mes;
+            document.getElementById('metaAnoTexto').innerText = metas.ano;
+
+            const faltamMes = Math.max(0, (metas.mes * 60) - minMes);
+            const faltamAno = Math.max(0, (metas.ano * 60) - minAno);
+
+            document.getElementById('horasFaltantesMes').innerText = `${formatarMinutosParaHoras(faltamMes)} h`;
+            document.getElementById('horasFaltantesAno').innerText = `${formatarMinutosParaHoras(faltamAno)} h`;
+
+            const pMes = Math.min(100, (minMes / ((metas.mes * 60) || 1)) * 100);
+            const pAno = Math.min(100, (minAno / ((metas.ano * 60) || 1)) * 100);
+
+            document.getElementById('barraProgresso').style.width = `${pMes}%`;
+            document.getElementById('barraProgressoMes').style.width = `${pMes}%`;
+            document.getElementById('barraProgressoAno').style.width = `${pAno}%`;
+        }
+
+        function renderizarListas() {
+            const render = (id, html) => document.getElementById(id).innerHTML = html;
+
+            const htmlAtiv = atividades.length ? atividades.map(a => `
+                <div class="item-card">
+                    <div>
+                        <strong>${(a.modalidade || 'Atividade').toUpperCase()} - ${a.tempoFormatado || '00:00'} h</strong>
+                        <p style="font-size:13px; color:var(--text-muted); margin-top:2px;">${a.data || ''} ${a.observacoes ? '| ' + a.observacoes : ''}</p>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="editarAtividade(${a.id})" class="add-button" style="padding:6px 12px; font-size:12px;">Editar</button>
+                        <button onclick="deletarItem('atividades', ${a.id})" class="delete-button">Excluir</button>
+                    </div>
+                </div>
+            `).join('') : '<p style="color:var(--text-muted);">Nenhum registro encontrado.</p>';
+
+            render('listaAtividadesRecentes', htmlAtiv);
+            render('listaAtividades', htmlAtiv);
+
+            render('listaEstudos', estudos.length ? estudos.map(e => `
+                <div class="item-card">
+                    <div><strong>${e.nome}</strong><p style="font-size:13px; color:var(--text-muted);">${e.publicacao || 'N/A'} | ${e.diaHora || 'N/A'}</p></div>
+                    <button onclick="deletarItem('estudos', ${e.id})" class="delete-button">Excluir</button>
+                </div>
+            `).join('') : '<p style="color:var(--text-muted);">Nenhum estudo cadastrado.</p>');
+
+            render('listaRevisitas', revisitas.length ? revisitas.map(r => `
+                <div class="item-card">
+                    <div><strong>${r.nome}</strong><p style="font-size:13px; color:var(--text-muted);">${r.endereco || 'N/A'} | ${r.assunto || 'N/A'}</p></div>
+                    <button onclick="deletarItem('revisitas', ${r.id})" class="delete-button">Excluir</button>
+                </div>
+            `).join('') : '<p style="color:var(--text-muted);">Nenhuma revisita cadastrada.</p>');
+
+            render('listaDiario', diario.length ? diario.map(d => `
+                <div class="item-card">
+                    <div><strong>${d.titulo} (${d.data})</strong><p style="font-size:13px; color:var(--text-muted);">${d.texto}</p></div>
+                    <button onclick="deletarItem('diario', ${d.id})" class="delete-button">Excluir</button>
+                </div>
+            `).join('') : '<p style="color:var(--text-muted);">Nenhuma anotação salva.</p>');
+        }
+
+        function deletarItem(tipo, id) {
+            if (tipo === 'atividades') atividades = atividades.filter(i => i.id !== id);
+            if (tipo === 'estudos') estudos = estudos.filter(i => i.id !== id);
+            if (tipo === 'revisitas') revisitas = revisitas.filter(i => i.id !== id);
+            if (tipo === 'diario') diario = diario.filter(i => i.id !== id);
+            salvarDados();
+            atualizarTela();
+        }
+
+        function mudarMes(delta) {
+            dataVisualizada.setMonth(dataVisualizada.getMonth() + delta);
+            renderizarCalendario();
+            renderizarPainelEMetas();
+        }
+
+        function renderizarCalendario() {
+            const elMes = document.getElementById('mesAtual');
+            const elDias = document.getElementById('diasCalendario');
+
+            const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const ano = dataVisualizada.getFullYear();
+            const mes = dataVisualizada.getMonth();
+
+            elMes.innerText = `${meses[mes]} ${ano}`;
+
+            const primeiroDia = new Date(ano, mes, 1).getDay();
+            const totalDias = new Date(ano, mes + 1, 0).getDate();
+
+            let html = '';
+            for (let i = 0; i < primeiroDia; i++) html += `<div class="calendar-day empty"></div>`;
+
+            for (let dia = 1; dia <= totalDias; dia++) {
+                const dataFmt = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+                const ativs = atividades.filter(a => a.data === dataFmt);
+                const minDia = ativs.reduce((s, a) => s + (a.minutos || 0), 0);
+
+                let dots = '';
+                ativs.forEach(a => dots += `<span class="dot dot-${a.modalidade || 'pregacao'}"></span>`);
+
+                let ind = minDia > 0 ? `<div style="font-size:10px; font-weight:bold; color:var(--primary); margin-top:2px;">${formatarMinutosParaHoras(minDia)}h</div>` : '';
+
+                html += `
+                    <div class="calendar-day ${minDia > 0 ? 'worked-day' : ''}">
+                        <span class="day-number">${dia}</span>
+                        <div class="dots-container">${dots}</div>
+                        ${ind}
+                    </div>
+                `;
+            }
+            elDias.innerHTML = html;
+        }
+
+        function renderizarPlanejador() {
+            const container = document.getElementById('containerPlanejamentoSemanal');
+            const diasNome = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+
+            let totMin = 0;
+            let html = '';
+
+            diasNome.forEach((nome, idx) => {
+                const item = planejamentoSemanal[idx] || { ativo: false, tempo: "00:00" };
+                totMin += item.ativo ? converterTextoParaMinutos(item.tempo) : 0;
+
+                html += `
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; background:#f8fafc; border:1px solid var(--border-color); padding:12px 16px; border-radius:10px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <input type="checkbox" id="chk_${idx}" ${item.ativo ? 'checked' : ''} onchange="alternarDia(${idx}, this.checked)">
+                            <label for="chk_${idx}" style="font-weight:600; font-size:14px; cursor:pointer;">${nome}</label>
+                        </div>
+                        <input type="text" value="${item.tempo || '00:00'}" onchange="atualizarTempo(${idx}, this.value)" ${!item.ativo ? 'disabled' : ''} style="width:80px; text-align:center; padding:6px; border:1px solid var(--border-color); border-radius:8px;">
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('totalSemanaPlanejado').innerText = `${formatarMinutosParaHoras(totMin)} h`;
+            document.getElementById('estimativaMensalPlanejada').innerText = `${formatarMinutosParaHoras(totMin * 4)} h`;
+
+            // === CÁLCULO EXATO DA META DIÁRIA COM BASE NOS DIAS TICADOS RESTANTES ===
+            const ano = dataVisualizada.getFullYear();
+            const mes = dataVisualizada.getMonth();
+            const minRealizados = atividades.reduce((acc, c) => {
+                if (!c.data) return acc;
+                const p = c.data.split('-');
+                if (parseInt(p[0], 10) === ano && (parseInt(p[1], 10) - 1) === mes) return acc + (c.minutos || 0);
+                return acc;
+            }, 0);
+
+            const faltamMinutos = Math.max(0, (metas.mes * 60) - minRealizados);
+            const hoje = new Date();
+            const totalDiasMes = new Date(ano, mes + 1, 0).getDate();
+            const diaInicio = (hoje.getFullYear() === ano && hoje.getMonth() === mes) ? hoje.getDate() : 1;
+
+            // Conta quantos dias TICADOS ainda restam no mês
+            let diasTicadosRestantes = 0;
+            for (let d = diaInicio; d <= totalDiasMes; d++) {
+                const diaDaSemana = new Date(ano, mes, d).getDay();
+                if (planejamentoSemanal[diaDaSemana] && planejamentoSemanal[diaDaSemana].ativo) {
+                    diasTicadosRestantes++;
+                }
+            }
+
+            const textoStatus = document.getElementById('textoStatusAtraso');
+            const metricasBox = document.getElementById('metricasReprogramacao');
+
+            if (faltamMinutos === 0) {
+                textoStatus.innerText = "Parabéns! Você alcançou sua meta mensal de horas!";
+                metricasBox.innerHTML = "";
+            } else if (diasTicadosRestantes === 0) {
+                textoStatus.innerText = `Faltam ${formatarMinutosParaHoras(faltamMinutos)}h para cumprir a meta do mês, mas você não possui nenhum dia programado (ticado) restante neste mês.`;
+                metricasBox.innerHTML = `<div style="margin-top:8px; font-weight:700; color:#ef4444;">Marque (tique) os dias no seu Planejador para ver a meta diária ajustada.</div>`;
+            } else {
+                const metaDiariaMin = Math.ceil(faltamMinutos / diasTicadosRestantes);
+                textoStatus.innerText = `Faltam ${formatarMinutosParaHoras(faltamMinutos)}h para a meta do mês. Restam ${diasTicadosRestantes} dia(s) programados até o fim do mês:`;
+                metricasBox.innerHTML = `<div style="margin-top:8px; font-weight:700; color:var(--primary); font-size:16px;">Meta ajustada para os dias ativos: ${formatarMinutosParaHoras(metaDiariaMin)} h/dia</div>`;
+            }
+        }
+
+        function alternarDia(idx, ativo) {
+            planejamentoSemanal[idx] = planejamentoSemanal[idx] || { tempo: "00:00" };
+            planejamentoSemanal[idx].ativo = ativo;
+            salvarDados();
+            renderizarPlanejador();
+        }
+
+        function atualizarTempo(idx, valor) {
+            planejamentoSemanal[idx] = planejamentoSemanal[idx] || { ativo: true };
+            planejamentoSemanal[idx].tempo = valor;
+            salvarDados();
+            renderizarPlanejador();
+        }
+    </script>
+</body>
+</html>
